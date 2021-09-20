@@ -19,7 +19,9 @@ public class CarController : MonoBehaviour
 
 	private void Start()
 	{
-		transform = gameObject.GetComponent<Transform>();		// Buffer transform, because Component.transform calls GetComponent() under the hood
+		driftFactor = Mathf.Clamp(driftFactor, 0.0f, 1.0f);
+
+		transform = gameObject.GetComponent<Transform>();       // Buffer transform, because Component.transform calls GetComponent() under the hood
 		rigidbody = gameObject.GetComponent<Rigidbody2D>();
 	}
 
@@ -27,26 +29,29 @@ public class CarController : MonoBehaviour
 	{
 		// Only process one input per frame, since the state flowchart does not allow for multiple inputs at once
 		// Also intending to brag a bit with how many methods I know to compare floats >.< Hope they are correctly used
-		// ACCELERATE
-		// Dot() to determine if the car is breaking or accelerating backwards
-		// The double check of (movement.y < -float.Epsilon) is not very beautiful, but I have to either double evaluate a condition or write the if-body twice
-		if(movement.y > float.Epsilon || (movement.y < -float.Epsilon && Vector3.Dot(rigidbody.velocity, movement) > float.Epsilon))
+		if(movement != Vector2.zero)
 		{
-			rigidbody.AddForce(transform.up * accelerationForce * movement.y, ForceMode2D.Impulse);
-		}
-		// BRAKE
-		else if(movement.y < -float.Epsilon)
-		{
-			rigidbody.AddForce(transform.up * brakeForce * movement.y, ForceMode2D.Impulse);
-		}
-		// TURN
-		else if(!Mathf.Approximately(movement.x, 0.0f) && rigidbody.velocity != Vector2.zero)				// Unity Vectors use Approximately() implicitly
-		{
-			rigidbody.AddTorque(rigidbody.velocity.magnitude * -steerTorque * movement.x, ForceMode2D.Impulse);
+			// ACCELERATE
+			// Dot() to determine if the car is accelerating with (accelerating) or against its current velocity (braking)
+			if(!Mathf.Approximately(movement.y, 0.0f) && Vector3.Dot(rigidbody.velocity, movement) > float.Epsilon)
+			{
+				rigidbody.AddForce(transform.up * accelerationForce * movement.y, ForceMode2D.Impulse);
+			}
+			// TURN
+			// TODO: Could also calculate if the wheels have enough traction/are moving into the right direction for steering
+			else if(!Mathf.Approximately(movement.x, 0.0f) && rigidbody.velocity != Vector2.zero)					// Unity Vectors use Approximately() implicitly
+			{
+				rigidbody.AddTorque(rigidbody.velocity.magnitude * -steerTorque * movement.x, ForceMode2D.Impulse);
+			}
+			// BRAKE
+			else
+			{
+				rigidbody.AddForce(transform.up * brakeForce * movement.y, ForceMode2D.Impulse);
+			}
 		}
 
 		// Stop Drift
-		Vector2 targetVelocity = transform.up * Vector2.Dot(rigidbody.velocity, (Vector2)transform.up);		// Project current velocity on the vehicles forward direction
+		Vector2 targetVelocity = transform.up * Vector2.Dot(rigidbody.velocity, (Vector2)transform.up);				// Project current velocity on the vehicles forward direction
 		rigidbody.velocity += (targetVelocity - rigidbody.velocity) * driftFactor;
 	}
 
