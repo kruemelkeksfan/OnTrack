@@ -5,9 +5,13 @@ using UnityEngine.InputSystem;
 
 public class CarController : MonoBehaviour
 {
+	[Tooltip("Determines Power of the Engine for driving forward/backward.")]
 	[SerializeField] private float accelerationForce = 1.0f;
+	[Tooltip("Determines Power of the Brakes for Deceleration.")]
 	[SerializeField] private float brakeForce = 1.0f;
+	[Tooltip("Determines Turn Speed.")]
 	[SerializeField] private float steerTorque = 1.0f;
+	[Tooltip("Determines how direct the Vehicle drives. Value between 0 and 1.0. Low Values lead to more drifting, high Values to directer Handling.")]
 	[SerializeField] private float driftFactor = 0.2f;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
