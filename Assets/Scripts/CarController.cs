@@ -15,7 +15,7 @@ public class CarController : MonoBehaviour
 
 	private void Start()
 	{
-		transform = gameObject.GetComponent<Transform>();	// Buffer transform, because Component.transform calls GetComponent() under the hood
+		transform = gameObject.GetComponent<Transform>();		// Buffer transform, because Component.transform calls GetComponent() under the hood
 		rigidbody = gameObject.GetComponent<Rigidbody2D>();
 	}
 
