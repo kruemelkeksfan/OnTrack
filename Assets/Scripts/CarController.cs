@@ -8,6 +8,7 @@ public class CarController : MonoBehaviour
 	[SerializeField] private float accelerationForce = 1.0f;
 	[SerializeField] private float brakeForce = 1.0f;
 	[SerializeField] private float steerTorque = 1.0f;
+	[SerializeField] private float driftFactor = 0.2f;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private Vector2 movement = Vector2.zero;
@@ -35,10 +36,14 @@ public class CarController : MonoBehaviour
 			rigidbody.AddForce(transform.up * brakeForce * movement.y, ForceMode2D.Impulse);
 		}
 		// TURN
-		else if(!Mathf.Approximately(movement.x, 0.0f) && rigidbody.velocity != Vector2.zero)								// Unity Vectors use Approximately() implicitly
+		else if(!Mathf.Approximately(movement.x, 0.0f) && rigidbody.velocity != Vector2.zero)				// Unity Vectors use Approximately() implicitly
 		{
-			rigidbody.AddTorque(-steerTorque * movement.x, ForceMode2D.Impulse);
+			rigidbody.AddTorque(rigidbody.velocity.magnitude * -steerTorque * movement.x, ForceMode2D.Impulse);
 		}
+
+		// Stop Drift
+		Vector2 targetVelocity = transform.up * Vector2.Dot(rigidbody.velocity, (Vector2)transform.up);		// Project current velocity on the vehicles forward direction
+		rigidbody.velocity += (targetVelocity - rigidbody.velocity) * driftFactor;
 	}
 
 	public void Move(InputAction.CallbackContext context)
